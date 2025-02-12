@@ -9,77 +9,32 @@
 <body>
     <div class="container">
         <h1>Sistema de Diagnóstico Médico</h1>
-        
-        <!-- Texto de introdução -->
-        <div class="descricao-doencas">
-            <p>No mundo da tecnologia, longas horas de trabalho, prazos apertados e desafios constantes podem levar a condições pouco estudadas, mas altamente impactantes para a produtividade dos desenvolvedores. O Instituto Tecnológico de Saúde Digital (ITSD), referência mundial em pesquisas sobre o bem-estar de profissionais da área de tecnologia, desenvolveu um sistema inovador que auxilia médicos a identificarem quatro doenças tecnológicas fictícias, ajudando programadores e profissionais de TI a compreender e tratar os seguintes sintomas:</p>
-            
-            <ul>
-                <li><strong>Síndrome do Stack Overflow Dependente (SSD):</strong>
-                    <p>A Síndrome do Stack Overflow Dependente (SSD) é uma condição crônica que afeta programadores que perderam a capacidade de escrever código sem antes consultar o Stack Overflow. Os pacientes apresentam sintomas como tendinite por excesso de Ctrl + C / Ctrl + V, dores de cabeça ao tentar programar sem exemplos prontos e até tosse nervosa quando o site está fora do ar. Em casos graves, podem entrar em estado de confusão ao se depararem com um erro que não possui resposta direta na internet.</p>
-                </li>    
-                <li>
-                    <strong>Síndrome da Tela Azul (STB)</strong>
-                    <p>A Síndrome da Tela Azul (STB) é um transtorno traumático que atinge principalmente usuários do Windows que já passaram por experiências de perda irreparável de arquivos devido à famosa "Tela Azul da Morte". Os afetados podem sofrer suor frio ao ver a tela congelar, dor no estômago ao lembrar que não salvaram o trabalho e, em casos extremos, desmaios ao ver a cor azul. A condição pode se agravar em ambientes de trabalho com prazos apertados, onde cada segundo sem resposta do sistema causa um aumento exponencial da ansiedade.</p>
-                </li>
-                <li>
-                    <strong>Pânico do Push (PP)</strong>
-                    <p>O Pânico do Push (PP) é uma condição psicológica que gera um medo irracional de dar um git push e perceber tarde demais que enviou algo errado para a branch principal. Entre os sintomas estão palpitações antes de confirmar o push, dor no peito ao perceber que algo foi enviado incorretamente e falta de ar ao lidar com merges inesperados. Muitos desenvolvedores lidam com essa condição adotando rituais excessivos, como revisar o código dezenas de vezes ou verificar repetidamente se estão na branch correta antes de executar qualquer comando.</p>
-                </li>
-                <li>
-                    <strong>Insônia por Indentação (IPI)</strong>
-                    <p>A Insônia por Indentação (IPI) é um distúrbio que afeta desenvolvedores obcecados por código bem formatado. Mesmo que o código funcione perfeitamente, a desorganização visual pode causar coceira intensa, dores nos olhos ao ver código desalinhado e até problemas para dormir, pois o programador continua corrigindo a indentação mentalmente. Em casos graves, a vítima pode passar horas ajustando espaçamentos, tabulações e estilos de código sem conseguir focar na lógica da programação.</p>
-                </li>
-            </ul>
-
-        </div>
+        <p>
+            No mundo da tecnologia, longas horas de trabalho, prazos apertados e desafios constantes podem levar a condições pouco estudadas, mas altamente impactantes para a produtividade dos desenvolvedores. 
+            Dessa forma, este sistema auxilia médicos no diagnóstico de 4 doenças para ajudar programadores e profissionais de TI a compreender e tratar seus sintomas.
+        </p>
+        <p>
+            A tabela de treinamento abaixo contém uma lista de sintomas e a relação de sua intensidade para cada uma das doenças cadastradas. Ela pode ser personalizada essa tabela para refinar o processo de diagnóstico, editando as doenças, sintomas e intensidades. 
+        </p>
 
         <!-- Tabela editável com os sintomas -->
         <h2>Tabela de Treinamento</h2>
         <table id="tabela-sintomas">
             <thead>
                 <tr>
-                    <th>Sintoma</th>
-                    <th contenteditable="true">Síndrome do Stack Overflow Dependente (SSD)</th>
-                    <th contenteditable="true">Síndrome da Tela Azul (STB)</th>
-                    <th contenteditable="true">Pânico do Push (PP)</th>
-                    <th contenteditable="true">Insônia por Indentação (IPI)</th>
+                    
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td contenteditable="true">Dores de cabeça</td>
-                    <td>
-                        <select><option value="Irrelevante">Irrelevante</option><option value="Médio">Médio</option><option value="Forte">Forte</option></select>
-                    </td>
-                    <td>
-                        <select><option value="Irrelevante">Irrelevante</option><option value="Médio">Médio</option><option value="Forte">Forte</option></select>
-                    </td>
-                    <td>
-                        <select><option value="Irrelevante">Irrelevante</option><option value="Médio">Médio</option><option value="Forte">Forte</option></select>
-                    </td>
-                    <td>
-                        <select><option value="Irrelevante">Irrelevante</option><option value="Médio">Médio</option><option value="Forte">Forte</option></select>
-                    </td>
-                <tr>
-                    <td contenteditable="true">Dores no peito</td>
-                    <td>
-                        <select><option value="Irrelevante">Irrelevante</option><option value="Médio">Médio</option><option value="Forte">Forte</option></select>
-                    </td>
-                    <td>
-                        <select><option value="Irrelevante">Irrelevante</option><option value="Médio">Médio</option><option value="Forte">Forte</option></select>
-                    </td>
-                    <td>
-                        <select><option value="Irrelevante">Irrelevante</option><option value="Médio">Médio</option><option value="Forte">Forte</option></select>
-                    </td>
-                    <td>
-                        <select><option value="Irrelevante">Irrelevante</option><option value="Médio">Médio</option><option value="Forte">Forte</option></select>
-                    </td>
-                </tr>
+                
             </tbody>
         </table>
 
-        <button id="salvar-tabela">Salvar Tabela</button>
+        <button id="salvar-tabela">Treinar sistema</button>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+    
 </body>
 </html>
