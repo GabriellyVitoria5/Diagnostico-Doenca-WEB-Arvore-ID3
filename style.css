@@ -63,3 +63,7 @@ form {
 label, select {
     margin: 5px 0;
 }
+
+a{
+    text-decoration: none;
+}
