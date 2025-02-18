@@ -125,8 +125,11 @@ def receber_diagnostico():
     if len(respostas_numericas) != len(X_global.columns):
         return jsonify({"error": "Número incorreto de respostas."}), 400
 
+    # Cria um DataFrame com os nomes das colunas corretos
+    respostas_df = pd.DataFrame([respostas_numericas], columns=sintomas_treinados)
+
     # Faz a previsão usando o modelo treinado
-    prediction = model.predict([respostas_numericas])
+    prediction = model.predict(respostas_df)
 
     return jsonify({"diagnostico": prediction[0]}), 200  # Retorna o diagnóstico
 
