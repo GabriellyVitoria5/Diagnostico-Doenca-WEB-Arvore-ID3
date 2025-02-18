@@ -1,35 +1,35 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
+import pandas as pd  # Biblioteca para manipulação de dados em formato de tabela
+from sklearn.tree import DecisionTreeClassifier  # Algoritmo de árvore de decisão
 
 app = Flask(__name__)
 CORS(app)
 
-# Inicializar o modelo de árvore de decisão (ID3)
-model = None
-X_global = None  # Armazena as colunas usadas no treinamento
-sintomas_treinados = []  # Lista para armazenar os sintomas treinados
+# Variáveis globais
+model = None  # Armazena o modelo de árvore de decisão
+X_global = None  # Armazena as colunas (sintomas) usadas no treinamento
+sintomas_treinados = []  # Lista para armazenar os sintomas que foram treinados
 
 
+# Rota para receber e processar os dados de treinamento
 @app.route("/upload", methods=["POST"])
 def upload_file():
-    global model, X_global, sintomas_treinados
+    global model, X_global, sintomas_treinados  # Acessa as variáveis globais
 
-    data = request.get_json()
+    data = request.get_json()  # Recebe os dados enviados no corpo da requisição
 
-    # Verifica se os dados foram recebidos corretamente
+    # Verifica se os dados foram recebidos
     if not data:
         return jsonify({"error": "Nenhum dado enviado"}), 400
 
-    # Imprime o JSON recebido para depuração
-    print("JSON recebido:", data)
+    print("JSON recebido:", data)  # Exibe os dados recebidos para depuração
 
-    # Converte os dados de forma correta
+    # Converte os dados para o formato correto
     data_corrigido = []
     for item in data:
         if "Sintoma" in item:
-            sintoma = item["Sintoma"]  # Corrige o nome
+            sintoma = item["Sintoma"]  # Extrai o nome do sintoma
             for doenca, intensidade in item.items():
                 if doenca != "Sintoma":  # Ignora a chave "Sintoma"
                     data_corrigido.append(
@@ -38,7 +38,7 @@ def upload_file():
                             "doenca": doenca,
                             "intensidade": intensidade,
                         }
-                    )
+                    )  # Organiza os dados em um formato mais fácil de trabalhar
 
     # Verifica se os dados foram convertidos corretamente
     if not data_corrigido:
@@ -47,74 +47,65 @@ def upload_file():
             400,
         )
 
-    # Mapeamento das intensidades para números
+    # Mapeia as intensidades para números (0: Irrelevante, 1: Médio, 2: Forte)
     intensidade_map = {"Irrelevante": 0, "Médio": 1, "Forte": 2}
 
-    sintomas_treinados = []
-    intensidades_dict = {}
+    sintomas_treinados = []  # Reinicia a lista de sintomas treinados
+    intensidades_dict = {}  # Dicionário para armazenar as intensidades dos sintomas
 
     # Processa os dados e mapeia as intensidades
     for item in data_corrigido:
-        if "sintoma" not in item or "intensidade" not in item:
-            return (
-                jsonify(
-                    {
-                        "error": "Formato inválido. Cada item deve conter 'sintoma' e 'intensidade'."
-                    }
-                ),
-                400,
-            )
-
         sintoma = item["sintoma"]
         intensidade = item["intensidade"]
 
-        # Inicializa a chave do sintoma se não existir
+        # Inicializa a lista de intensidades para cada sintoma
         if sintoma not in intensidades_dict:
             intensidades_dict[sintoma] = []
 
-        # Adiciona a intensidade mapeada
+        # Adiciona a intensidade mapeada ao sintoma correspondente
         intensidades_dict[sintoma].append(intensidade_map.get(intensidade, 0))
 
-        # Adiciona o sintoma à lista de sintomas treinados
+        # Adiciona o sintoma à lista de sintomas treinados (se ainda não estiver)
         if sintoma not in sintomas_treinados:
             sintomas_treinados.append(sintoma)
 
-    # Ajusta os dados para criar o DataFrame
+    # Cria uma lista de listas com as intensidades dos sintomas
     intensidades = [intensidades_dict[sintoma] for sintoma in sintomas_treinados]
     intensidades = list(
         zip(*intensidades)
-    )  # Transposta para garantir que as intensidades se alinhem
+    )  # Transpõe a lista para alinhar as intensidades
 
-    # Criar DataFrame corretamente
+    # Cria um DataFrame (tabela) com as intensidades e os sintomas como colunas
     df = pd.DataFrame(intensidades, columns=sintomas_treinados)
+    X_global = df  # Armazena o DataFrame globalmente
 
-    X_global = df
-
-    # Corrige o vetor y para ter um rótulo por amostra
-    # Assumimos que você quer o rótulo de doença associado ao sintoma mais relevante
+    # Cria o vetor de rótulos (doenças) com base nas doenças associadas aos sintomas
     y = [item["doenca"] for item in data_corrigido[: len(X_global)]]
 
-    # Ajusta o modelo com múltiplas doenças
+    # Treina o modelo de árvore de decisão com os dados
     model = DecisionTreeClassifier(criterion="entropy")
     model.fit(X_global, y)
 
     return jsonify({"message": "Modelo treinado com sucesso!"}), 200
 
 
-# Rota para receber o diagnóstico do paciente
+# Rota para receber os sintomas e retornar um diagnóstico
 @app.route("/diagnostico", methods=["POST"])
 def receber_diagnostico():
-    global sintomas_treinados, X_global, model
+    global sintomas_treinados, X_global, model  # Acessa as variáveis globais
 
-    respostas = request.get_json().get("respostas", [])
+    respostas = request.get_json().get(
+        "respostas", []
+    )  # Recebe as respostas do usuário
     if not respostas:
         return jsonify({"error": "Nenhuma resposta recebida"}), 400
 
+    # Converte as respostas em um dicionário {sintoma: intensidade}
     resposta_dict = {
         resposta["sintoma"]: resposta["intensidade"] for resposta in respostas
     }
 
-    # Verificar se todos os sintomas treinados foram enviados no diagnóstico
+    # Verifica se todos os sintomas treinados foram enviados
     sintomas_faltando = [s for s in sintomas_treinados if s not in resposta_dict]
     if sintomas_faltando:
         return (
@@ -124,32 +115,22 @@ def receber_diagnostico():
             400,
         )
 
-    # Mapear as respostas para os valores numéricos e garantir a ordem correta
+    # Mapeia as intensidades das respostas para números
     intensidade_map = {"Irrelevante": 0, "Médio": 1, "Forte": 2}
     respostas_numericas = [
         intensidade_map[resposta_dict[sintoma]] for sintoma in sintomas_treinados
     ]
 
-    # Verificar se o número de respostas bate com o número de colunas do modelo
+    # Verifica se o número de respostas corresponde ao número de sintomas treinados
     if len(respostas_numericas) != len(X_global.columns):
-        return (
-            jsonify(
-                {
-                    "error": "Número incorreto de respostas.",
-                    "esperado": len(X_global.columns),
-                    "recebido": len(respostas_numericas),
-                    "sintomas_treinados": sintomas_treinados,
-                    "sintomas_recebidos": list(resposta_dict.keys()),
-                }
-            ),
-            400,
-        )
+        return jsonify({"error": "Número incorreto de respostas."}), 400
 
-    # Fazer a previsão com o modelo
+    # Faz a previsão usando o modelo treinado
     prediction = model.predict([respostas_numericas])
 
-    return jsonify({"diagnostico": prediction[0]}), 200
+    return jsonify({"diagnostico": prediction[0]}), 200  # Retorna o diagnóstico
 
 
+# Inicia o servidor Flask
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)  # Executa a aplicação em modo de depuração
