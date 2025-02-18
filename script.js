@@ -1,324 +1,342 @@
-
+// Executa quando a página é carregada
 document.addEventListener("DOMContentLoaded", function () {
-    // Montar a tabela de treinamento padrão com os dados da planilha, ou com oss dados armazenaos localmente se houver
-    if (window.location.pathname.endsWith("index.html") || window.location.pathname === "/") {
-        const dadosTreinamento = getDadosTreinamento();
-        if (dadosTreinamento.length > 0) {
-            preencherTabelaComDadosSalvos(dadosTreinamento);
-        } else {
-            lerArquivoExcel("TabelaTreinamento.xlsx");
-        }
+  // Verifica se estamos na página inicial
+  if (
+    window.location.pathname.endsWith("index.html") ||
+    window.location.pathname === "/"
+  ) {
+    const dadosTreinamento = getDadosTreinamento(); // Busca dados salvos no localStorage
+    if (dadosTreinamento.length > 0) {
+      preencherTabelaComDadosSalvos(dadosTreinamento); // Preenche a tabela com dados salvos
+    } else {
+      lerArquivoExcel("TabelaTreinamento.xlsx"); // Carrega dados de um arquivo Excel
     }
+  }
 
-    // Pegar os dados da tabela de treiamento ao entrar na página do atendimento do paciente
-    if (window.location.pathname.endsWith("atenderPaciente.html") || window.location.pathname === "/") {
-        getDadosTreinamento();
-        criarFormularioSintomas();
-    }
+  // Verifica se estamos na página de atendimento
+  if (
+    window.location.pathname.endsWith("atenderPaciente.html") ||
+    window.location.pathname === "/"
+  ) {
+    getDadosTreinamento(); // Busca dados de treinamento
+    criarFormularioSintomas(); // Cria o formulário de sintomas para o paciente
+  }
 });
 
-// Ler arquivo excel
+// Função para ler um arquivo Excel
 function lerArquivoExcel(nomeArquivo) {
-    fetch(nomeArquivo)
-        .then(response => response.arrayBuffer())
-        .then(data => {
-            const workbook = XLSX.read(data, { type: "array" });
-            const nomePlanilha = workbook.SheetNames[0]; 
-            const planilha = workbook.Sheets[nomePlanilha];
-            const dadosJson = XLSX.utils.sheet_to_json(planilha, { header: 1 });
+  fetch(nomeArquivo)
+    .then((response) => response.arrayBuffer()) // Converte o arquivo para um array de bytes
+    .then((data) => {
+      const workbook = XLSX.read(data, { type: "array" }); // Lê o arquivo Excel
+      const nomePlanilha = workbook.SheetNames[0]; // Pega o nome da primeira planilha
+      const planilha = workbook.Sheets[nomePlanilha]; // Acessa a planilha
+      const dadosJson = XLSX.utils.sheet_to_json(planilha, { header: 1 }); // Converte para JSON
 
-            preencherTabela(dadosJson);
-        })
-        .catch(erro => console.error("Erro ao carregar o arquivo Excel:", erro));
+      preencherTabela(dadosJson); // Preenche a tabela com os dados
+    })
+    .catch((erro) => console.error("Erro ao carregar o arquivo Excel:", erro));
 }
 
-// Criar a tabela com as doenças, sintomas e suas intensidades a partir das informações do arquivo Excel
+// Função para preencher a tabela com os dados do Excel
 function preencherTabela(dados) {
-    if (dados.length === 0) {
-        console.error("Arquivo Excel vazio ou formato inválido.");
-        return;
-    }
+  if (dados.length === 0) {
+    console.error("Arquivo Excel vazio ou formato inválido.");
+    return;
+  }
 
-    const thead = document.querySelector("#tabela-sintomas thead tr");
-    const tbody = document.querySelector("#tabela-sintomas tbody");
+  const thead = document.querySelector("#tabela-sintomas thead tr"); // Cabeçalho da tabela
+  const tbody = document.querySelector("#tabela-sintomas tbody"); // Corpo da tabela
 
-    // Limpa a tabela antes de adicionar novos dados
-    thead.innerHTML = "";
-    tbody.innerHTML = "";
+  // Limpa a tabela antes de adicionar novos dados
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
 
-    // Preencher cabeçalho com doenças (primeira linha do arquivo)
-    thead.innerHTML = `<th>Sintoma</th>` + dados[0].slice(1).map(doenca => `<th contenteditable="true">${doenca}</th>`).join('');
+  // Preenche o cabeçalho com as doenças (primeira linha do Excel)
+  thead.innerHTML =
+    `<th>Sintoma</th>` +
+    dados[0]
+      .slice(1)
+      .map((doenca) => `<th contenteditable="true">${doenca}</th>`)
+      .join("");
 
-    // Adicionar sintomas e combobox de intensidade
-    dados.slice(1).forEach((linha, index) => {
-        const row = document.createElement("tr");
-        const cellSintoma = document.createElement("td");
-        cellSintoma.textContent = linha[0]; // Primeira coluna: Nome do sintoma
-        cellSintoma.contentEditable = "true";
-        row.appendChild(cellSintoma);
+  // Adiciona os sintomas e as intensidades (combobox)
+  dados.slice(1).forEach((linha, index) => {
+    const row = document.createElement("tr"); // Cria uma nova linha
+    const cellSintoma = document.createElement("td"); // Cria célula para o sintoma
+    cellSintoma.textContent = linha[0]; // Adiciona o nome do sintoma
+    cellSintoma.contentEditable = "true"; // Permite editar o nome do sintoma
+    row.appendChild(cellSintoma);
 
-        linha.slice(1).forEach((intensidade, colIndex) => {
-            const cell = document.createElement("td");
-            const select = document.createElement("select");
+    // Adiciona as intensidades (combobox) para cada doença
+    linha.slice(1).forEach((intensidade, colIndex) => {
+      const cell = document.createElement("td");
+      const select = document.createElement("select");
 
-            // Adicionar as escolha da intensidade dos sintomas no combo box
-            ["Irrelevante", "Médio", "Forte"].forEach(optionText => {
-                const option = document.createElement("option");
-                option.value = optionText;
-                option.textContent = optionText;
-                select.appendChild(option);
-            });
+      // Adiciona as opções de intensidade
+      ["Irrelevante", "Médio", "Forte"].forEach((optionText) => {
+        const option = document.createElement("option");
+        option.value = optionText;
+        option.textContent = optionText;
+        select.appendChild(option);
+      });
 
-            // Definir o valor do combo box baseado no valor do arquivo Excel
-            if (intensidade) {
-                const intensidadeSintoma = getIntensidadePorValor(intensidade);
-                select.value = intensidadeSintoma;
-            }
+      // Define o valor do combobox com base no valor do Excel
+      if (intensidade) {
+        const intensidadeSintoma = getIntensidadePorValor(intensidade);
+        select.value = intensidadeSintoma;
+      }
 
-            cell.appendChild(select);
-            row.appendChild(cell);
-        });
-
-        tbody.appendChild(row);
+      cell.appendChild(select);
+      row.appendChild(cell);
     });
+
+    tbody.appendChild(row); // Adiciona a linha à tabela
+  });
 }
 
-// Preencher a tabela com os dados armazenados no localStorage
+// Função para preencher a tabela com dados salvos no localStorage
 function preencherTabelaComDadosSalvos(dados) {
-    if (!dados || dados.length === 0) {
-        console.warn("Nenhum dado salvo encontrado para preencher a tabela.");
-        return;
-    }
+  if (!dados || dados.length === 0) {
+    console.warn("Nenhum dado salvo encontrado para preencher a tabela.");
+    return;
+  }
 
-    const thead = document.querySelector("#tabela-sintomas thead tr");
-    const tbody = document.querySelector("#tabela-sintomas tbody");
+  const thead = document.querySelector("#tabela-sintomas thead tr");
+  const tbody = document.querySelector("#tabela-sintomas tbody");
 
-    // Limpa a tabela antes de adicionar novos dados
-    thead.innerHTML = "";
-    tbody.innerHTML = "";
+  // Limpa a tabela antes de adicionar novos dados
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
 
-    // Cabeçalhos (Sintoma + Doenças)
-    const headers = Object.keys(dados[0]);
-    thead.innerHTML = `<th>Sintoma</th>` + headers.slice(1).map(doenca => `<th contenteditable="true">${doenca}</th>`).join('');
+  // Preenche o cabeçalho com as doenças
+  const headers = Object.keys(dados[0]);
+  thead.innerHTML =
+    `<th>Sintoma</th>` +
+    headers
+      .slice(1)
+      .map((doenca) => `<th contenteditable="true">${doenca}</th>`)
+      .join("");
 
-    // Adicionar sintomas e valores das intensidades
-    dados.forEach(linha => {
-        const row = document.createElement("tr");
-        const cellSintoma = document.createElement("td");
-        cellSintoma.textContent = linha["Sintoma"];
-        cellSintoma.contentEditable = "true";
-        row.appendChild(cellSintoma);
+  // Adiciona os sintomas e as intensidades
+  dados.forEach((linha) => {
+    const row = document.createElement("tr");
+    const cellSintoma = document.createElement("td");
+    cellSintoma.textContent = linha["Sintoma"]; // Adiciona o nome do sintoma
+    cellSintoma.contentEditable = "true";
+    row.appendChild(cellSintoma);
 
-        headers.slice(1).forEach(doenca => {
-            const cell = document.createElement("td");
-            const select = document.createElement("select");
+    // Adiciona as intensidades (combobox) para cada doença
+    headers.slice(1).forEach((doenca) => {
+      const cell = document.createElement("td");
+      const select = document.createElement("select");
 
-            ["Irrelevante", "Médio", "Forte"].forEach(optionText => {
-                const option = document.createElement("option");
-                option.value = optionText;
-                option.textContent = optionText;
-                if (linha[doenca] === optionText) {
-                    option.selected = true;
-                }
-                select.appendChild(option);
-            });
+      ["Irrelevante", "Médio", "Forte"].forEach((optionText) => {
+        const option = document.createElement("option");
+        option.value = optionText;
+        option.textContent = optionText;
+        if (linha[doenca] === optionText) {
+          option.selected = true; // Seleciona a opção correta
+        }
+        select.appendChild(option);
+      });
 
-            cell.appendChild(select);
-            row.appendChild(cell);
-        });
-
-        tbody.appendChild(row);
+      cell.appendChild(select);
+      row.appendChild(cell);
     });
 
-    console.log("Tabela preenchida com os dados salvos.");
+    tbody.appendChild(row); // Adiciona a linha à tabela
+  });
+
+  console.log("Tabela preenchida com os dados salvos.");
 }
 
-// Função para mapear o valor da intensidade do Excel para o valor do combo box
+// Função para mapear valores de intensidade
 function getIntensidadePorValor(valor) {
-    switch (valor) {
-        case "Irrelevante":
-            return "Irrelevante";
-        case "Médio":
-            return "Médio";
-        case "Forte":
-            return "Forte";
-        default:
-            return "Irrelevante"; 
-    }
+  switch (valor) {
+    case "Irrelevante":
+      return "Irrelevante";
+    case "Médio":
+      return "Médio";
+    case "Forte":
+      return "Forte";
+    default:
+      return "Irrelevante"; // Valor padrão
+  }
 }
 
-// Guardar os dados inseridos na tabela sobre  as doenças e sintomas localmente
+// Função para salvar os dados da tabela no localStorage
 function salvarDadosTreinamento() {
-    const tabela = document.getElementById("tabela-sintomas");
-    const dados = [];
-    const headers = Array.from(tabela.querySelector("thead tr").children).slice(1).map(th => th.textContent.trim()); // Doenças
+  const tabela = document.getElementById("tabela-sintomas");
+  const dados = [];
+  const headers = Array.from(tabela.querySelector("thead tr").children)
+    .slice(1)
+    .map((th) => th.textContent.trim()); // Doenças
 
-    tabela.querySelectorAll("tbody tr").forEach(tr => {
-        const linha = {};
-        const celulas = tr.children;
-        linha["Sintoma"] = celulas[0].textContent.trim(); // Sintoma na primeira coluna
+  // Coleta os dados da tabela
+  tabela.querySelectorAll("tbody tr").forEach((tr) => {
+    const linha = {};
+    const celulas = tr.children;
+    linha["Sintoma"] = celulas[0].textContent.trim(); // Sintoma
 
-        headers.forEach((doenca, index) => {
-            const select = celulas[index + 1].querySelector("select");
-            linha[doenca] = select.value; // Intensidade do sintoma escolhida
-        });
-
-        dados.push(linha);
+    headers.forEach((doenca, index) => {
+      const select = celulas[index + 1].querySelector("select");
+      linha[doenca] = select.value; // Intensidade
     });
 
-    // Salva no localStorage para ser usado na tela de atendimento do paciente
-    localStorage.setItem("dadosTreinamento", JSON.stringify(dados));
+    dados.push(linha); // Adiciona a linha aos dados
+  });
 
-    console.log("Dados de treinamento salvos:", dados);
+  localStorage.setItem("dadosTreinamento", JSON.stringify(dados)); // Salva no localStorage
+  console.log("Dados de treinamento salvos:", dados);
 
-    gerarDadosTreinamentoJson(JSON.stringify(dados))
+  gerarDadosTreinamentoJson(JSON.stringify(dados)); // Gera um arquivo JSON com os dados
 }
 
-// Gerar e baixar um arquivo JSON com os dados do treinamento
-function gerarDadosTreinamentoJson(dadosTreinamentoSalvos){
-    const blob = new Blob([dadosTreinamentoSalvos], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "dadosTreinamento.json";  // Nome do arquivo
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+// Função para gerar e baixar um arquivo JSON com os dados
+function gerarDadosTreinamentoJson(dadosTreinamentoSalvos) {
+  const blob = new Blob([dadosTreinamentoSalvos], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "dadosTreinamento.json"; // Nome do arquivo
+  document.body.appendChild(a);
+  a.click(); // Inicia o download
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
-// Pegar dados do treinamento da tabela de sintomas e doenças que foram armazenados localmente
-function getDadosTreinamento(){
-    const dadosSalvos = localStorage.getItem("dadosTreinamento");
-    if (dadosSalvos) {
-        const dadosTreinamento = JSON.parse(dadosSalvos);
-        console.log("Dados de treinamento carregados:");
-        console.log(JSON.stringify(dadosTreinamento, null, 2));
-        return dadosTreinamento // Retornar dados em um JSON
-    } 
+// Função para buscar dados de treinamento do localStorage
+function getDadosTreinamento() {
+  const dadosSalvos = localStorage.getItem("dadosTreinamento");
+  if (dadosSalvos) {
+    const dadosTreinamento = JSON.parse(dadosSalvos);
+    console.log("Dados de treinamento carregados:", dadosTreinamento);
+    return dadosTreinamento; // Retorna os dados
+  }
 
-    console.log("Nenhum dado de treinamento encontrado.");
-    return {};
+  console.log("Nenhum dado de treinamento encontrado.");
+  return {};
 }
 
-// Pegar o arquivo JSON com os dados de treinamento e enviar para o servidor flask
+// Função para enviar dados de treinamento para o servidor Flask
 function enviarDadosParaServidor() {
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
 
-    if (!file) {
-        alert("Por favor, selecione um arquivo JSON.");
-        return;
-    }
+  if (!file) {
+    alert("Por favor, selecione um arquivo JSON.");
+    return;
+  }
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const jsonData = JSON.parse(e.target.result);
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const jsonData = JSON.parse(e.target.result);
 
-        // Envia os dados para o servidor Python via POST
-        fetch('http://127.0.0.1:5000/upload', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(jsonData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Dados recebidos pelo servidor:", data);
-            window.location.href = "atenderPaciente.html"; // Redirecionar para a página de atendimento
-        })
-        .catch(error => {
-            console.error('Erro ao enviar os dados:', error);
-        });
-    };
-
-    reader.readAsText(file);
-}
-
-// Criar formulário com todos os sintomas e intensidades para o paciente
-function criarFormularioSintomas() {
-    const dadosTreinamento = getDadosTreinamento();
-    const form = document.getElementById("form-sintomas");
-
-    if (!dadosTreinamento || Object.keys(dadosTreinamento).length === 0) {
-        console.warn("Nenhum dado de treinamento encontrado.");
-        return;
-    }
-
-    dadosTreinamento.forEach(sintomaObj => {
-        const sintoma = sintomaObj["Sintoma"];
-        const div = document.createElement("div");
-        div.classList.add("card-sintoma");
-
-        const label = document.createElement("label");
-        label.textContent = sintoma;
-        div.appendChild(label);
-
-        // Criar radio buttons para intensidade do sintoma
-        ["Irrelevante", "Médio", "Forte"].forEach(intensidade => {
-            const input = document.createElement("input");
-            input.type = "radio";
-            input.name = sintoma;
-            input.value = intensidade;
-
-            const labelRadio = document.createElement("label");
-            labelRadio.textContent = intensidade;
-            labelRadio.appendChild(input);
-
-            div.appendChild(labelRadio);
-        });
-
-        form.appendChild(div);
-    });
-
-    // Botão de enviar as respostas
-    const button = document.createElement("button");
-    button.type = "submit";
-    button.textContent = "Finalizar diagnóstico";
-    form.appendChild(button);
-
-    container.appendChild(form);
-}
-
-// Função para enviar as respostas para o servidor
-function enviarRespostasParaServidor() {
-    const form = document.getElementById("form-sintomas");
-    const respostas = [];
-
-    // Percorre todos os inputs do formulário
-    const inputs = form.querySelectorAll('input[type="radio"]:checked');
-    inputs.forEach(input => {
-        const sintoma = input.name;
-        const intensidade = input.value;
-        respostas.push({ sintoma, intensidade });
-    });
-
-    if (respostas.length === 0) {
-        alert("Por favor, responda a todos os sintomas antes de enviar.");
-        return;
-    }
-
-    // Enviar respostas para o servidor Flask via POST
-    fetch('http://127.0.0.1:5000/diagnostico', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ respostas })
+    // Envia os dados para o servidor
+    fetch("http://127.0.0.1:5000/upload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(jsonData),
     })
-    .then(response => response.json())
-    .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         console.log("Dados recebidos pelo servidor:", data);
-        // Você pode adicionar aqui algum feedback para o usuário, como redirecionar para outra página ou mostrar uma mensagem.
+        window.location.href = "atenderPaciente.html"; // Redireciona para a página de atendimento
+      })
+      .catch((error) => {
+        console.error("Erro ao enviar os dados:", error);
+      });
+  };
+
+  reader.readAsText(file); // Lê o arquivo como texto
+}
+
+// Função para criar o formulário de sintomas para o paciente
+function criarFormularioSintomas() {
+  const dadosTreinamento = getDadosTreinamento();
+  const form = document.getElementById("form-sintomas");
+
+  if (!dadosTreinamento || Object.keys(dadosTreinamento).length === 0) {
+    console.warn("Nenhum dado de treinamento encontrado.");
+    return;
+  }
+
+  // Adiciona os sintomas e as opções de intensidade
+  dadosTreinamento.forEach((sintomaObj) => {
+    const sintoma = sintomaObj["Sintoma"];
+    const div = document.createElement("div");
+    div.classList.add("card-sintoma");
+
+    const label = document.createElement("label");
+    label.textContent = sintoma;
+    div.appendChild(label);
+
+    // Adiciona radio buttons para intensidade
+    ["Irrelevante", "Médio", "Forte"].forEach((intensidade) => {
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = sintoma;
+      input.value = intensidade;
+
+      const labelRadio = document.createElement("label");
+      labelRadio.textContent = intensidade;
+      labelRadio.appendChild(input);
+
+      div.appendChild(labelRadio);
+    });
+
+    form.appendChild(div); // Adiciona o sintoma ao formulário
+  });
+
+  // Adiciona o botão de enviar
+  const button = document.createElement("button");
+  button.type = "submit";
+  button.textContent = "Finalizar diagnóstico";
+  form.appendChild(button);
+}
+
+// Função para enviar as respostas do paciente para o servidor
+function enviarRespostasParaServidor() {
+  const form = document.getElementById("form-sintomas");
+  const respostas = [];
+
+  // Coleta as respostas do formulário
+  const inputs = form.querySelectorAll('input[type="radio"]:checked');
+  inputs.forEach((input) => {
+    const sintoma = input.name;
+    const intensidade = input.value;
+    respostas.push({ sintoma, intensidade });
+  });
+
+  if (respostas.length === 0) {
+    alert("Por favor, responda a todos os sintomas antes de enviar.");
+    return;
+  }
+
+  // Envia as respostas para o servidor
+  fetch("http://127.0.0.1:5000/diagnostico", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ respostas }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Dados recebidos pelo servidor:", data);
     })
-    .catch(error => {
-        console.error('Erro ao enviar as respostas:', error);
+    .catch((error) => {
+      console.error("Erro ao enviar as respostas:", error);
     });
 }
 
-// Adicionar evento de envio ao formulário de sintomas
-document.getElementById("form-sintomas").addEventListener("submit", function (event) {
-    event.preventDefault(); // Evitar o comportamento padrão de envio do formulário
-    enviarRespostasParaServidor(); // Enviar as respostas para o servidor
-});
+// Adiciona o evento de envio ao formulário
+document
+  .getElementById("form-sintomas")
+  .addEventListener("submit", function (event) {
+    event.preventDefault(); // Evita o envio padrão do formulário
+    enviarRespostasParaServidor(); // Envia as respostas
+  });
