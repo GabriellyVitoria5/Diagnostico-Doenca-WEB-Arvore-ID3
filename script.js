@@ -259,8 +259,15 @@ function criarFormularioSintomas() {
   const dadosTreinamento = getDadosTreinamento();
   const form = document.getElementById("form-sintomas");
 
-  if (!dadosTreinamento || Object.keys(dadosTreinamento).length === 0) {
-    console.warn("Nenhum dado de treinamento encontrado.");
+  // Verifica se o formulário existe e se há dados de treinamento
+  if (
+    !form ||
+    !dadosTreinamento ||
+    Object.keys(dadosTreinamento).length === 0
+  ) {
+    console.warn(
+      "Nenhum dado de treinamento encontrado ou formulário não existe."
+    );
     return;
   }
 
@@ -333,10 +340,11 @@ function enviarRespostasParaServidor() {
     });
 }
 
-// Adiciona o evento de envio ao formulário
-document
-  .getElementById("form-sintomas")
-  .addEventListener("submit", function (event) {
+// Adiciona o evento de envio ao formulário (somente se o formulário existir)
+const formSintomas = document.getElementById("form-sintomas");
+if (formSintomas) {
+  formSintomas.addEventListener("submit", function (event) {
     event.preventDefault(); // Evita o envio padrão do formulário
     enviarRespostasParaServidor(); // Envia as respostas
   });
+}
