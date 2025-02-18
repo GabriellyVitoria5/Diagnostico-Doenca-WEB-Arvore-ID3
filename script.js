@@ -280,3 +280,45 @@ function criarFormularioSintomas() {
 
     container.appendChild(form);
 }
+
+// Função para enviar as respostas para o servidor
+function enviarRespostasParaServidor() {
+    const form = document.getElementById("form-sintomas");
+    const respostas = [];
+
+    // Percorre todos os inputs do formulário
+    const inputs = form.querySelectorAll('input[type="radio"]:checked');
+    inputs.forEach(input => {
+        const sintoma = input.name;
+        const intensidade = input.value;
+        respostas.push({ sintoma, intensidade });
+    });
+
+    if (respostas.length === 0) {
+        alert("Por favor, responda a todos os sintomas antes de enviar.");
+        return;
+    }
+
+    // Enviar respostas para o servidor Flask via POST
+    fetch('http://127.0.0.1:5000/diagnostico', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ respostas })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Dados recebidos pelo servidor:", data);
+        // Você pode adicionar aqui algum feedback para o usuário, como redirecionar para outra página ou mostrar uma mensagem.
+    })
+    .catch(error => {
+        console.error('Erro ao enviar as respostas:', error);
+    });
+}
+
+// Adicionar evento de envio ao formulário de sintomas
+document.getElementById("form-sintomas").addEventListener("submit", function (event) {
+    event.preventDefault(); // Evitar o comportamento padrão de envio do formulário
+    enviarRespostasParaServidor(); // Enviar as respostas para o servidor
+});
