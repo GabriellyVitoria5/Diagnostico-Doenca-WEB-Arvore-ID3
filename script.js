@@ -12,7 +12,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Pegar os dados da tabela de treiamento ao entrar na página do atendimento do paciente
     if (window.location.pathname.endsWith("atenderPaciente.html") || window.location.pathname === "/") {
-        getDadosTreinamento()
+        getDadosTreinamento();
+        criarFormularioSintomas();
     }
 });
 
@@ -169,6 +170,20 @@ function salvarDadosTreinamento() {
     localStorage.setItem("dadosTreinamento", JSON.stringify(dados));
 
     console.log("Dados de treinamento salvos:", dados);
+
+    gerarDadosTreinamentoJson(JSON.stringify(dados))
+}
+
+function gerarDadosTreinamentoJson(dadosTreinamentoSalvos){
+    const blob = new Blob([dadosTreinamentoSalvos], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dadosTreinamento.json";  // Nome do arquivo
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // Pegar dados do treinamento da tabela de sintomas e doenças que foram armazenados localmente
@@ -176,7 +191,8 @@ function getDadosTreinamento(){
     const dadosSalvos = localStorage.getItem("dadosTreinamento");
     if (dadosSalvos) {
         const dadosTreinamento = JSON.parse(dadosSalvos);
-        console.log("Dados de treinamento carregados:", dadosTreinamento);
+        console.log("Dados de treinamento carregados:");
+        console.log(JSON.stringify(dadosTreinamento, null, 2));
         return dadosTreinamento // Retornar dados em um JSON
     } 
 
@@ -184,4 +200,39 @@ function getDadosTreinamento(){
     return {};
 }
 
-// Implementar algoritmo ID3 para identidicar a doença (pode usar API)
+// Pegar o arquivo JSON com os dados de treinamento e enviar para o servidor flask
+function enviarDadosParaServidor() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Por favor, selecione um arquivo JSON.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const jsonData = JSON.parse(e.target.result);
+
+        // Envia os dados para o servidor Python via POST
+        fetch('http://127.0.0.1:5000/upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Dados recebidos pelo servidor:", data);
+            window.location.href = "atenderPaciente.html"; // Redirecionar para a página de atendimento
+        })
+        .catch(error => {
+            console.error('Erro ao enviar os dados:', error);
+        });
+    };
+
+    reader.readAsText(file);
+}
+
+

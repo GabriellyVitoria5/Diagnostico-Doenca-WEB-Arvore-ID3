@@ -30,9 +30,12 @@
             </tbody>
         </table>
 
-        <a href="atenderPaciente.html">
-            <button id="salvar-tabela" onclick="salvarDadosTreinamento()">Atender paciente</button>
-        </a>
+        <button id="salvar-tabela" onclick="salvarDadosTreinamento()">Salvar dados do treinamento </button>
+
+        <p>Selecione o arquivo de treinamento gerado para dar início ao atendimento do paciente:</p>
+        <input type="file" id="fileInput" accept=".json" />
+
+        <button id="atender-paciente" onclick="enviarDadosParaServidor()">Atender Paciente</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
