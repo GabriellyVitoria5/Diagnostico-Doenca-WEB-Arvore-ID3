@@ -174,6 +174,7 @@ function salvarDadosTreinamento() {
     gerarDadosTreinamentoJson(JSON.stringify(dados))
 }
 
+// Gerar e baixar um arquivo JSON com os dados do treinamento
 function gerarDadosTreinamentoJson(dadosTreinamentoSalvos){
     const blob = new Blob([dadosTreinamentoSalvos], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -235,4 +236,47 @@ function enviarDadosParaServidor() {
     reader.readAsText(file);
 }
 
+// Criar formulário com todos os sintomas e intensidades para o paciente
+function criarFormularioSintomas() {
+    const dadosTreinamento = getDadosTreinamento();
+    const form = document.getElementById("form-sintomas");
 
+    if (!dadosTreinamento || Object.keys(dadosTreinamento).length === 0) {
+        console.warn("Nenhum dado de treinamento encontrado.");
+        return;
+    }
+
+    dadosTreinamento.forEach(sintomaObj => {
+        const sintoma = sintomaObj["Sintoma"];
+        const div = document.createElement("div");
+        div.classList.add("card-sintoma");
+
+        const label = document.createElement("label");
+        label.textContent = sintoma;
+        div.appendChild(label);
+
+        // Criar radio buttons para intensidade do sintoma
+        ["Irrelevante", "Médio", "Forte"].forEach(intensidade => {
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.name = sintoma;
+            input.value = intensidade;
+
+            const labelRadio = document.createElement("label");
+            labelRadio.textContent = intensidade;
+            labelRadio.appendChild(input);
+
+            div.appendChild(labelRadio);
+        });
+
+        form.appendChild(div);
+    });
+
+    // Botão de enviar as respostas
+    const button = document.createElement("button");
+    button.type = "submit";
+    button.textContent = "Finalizar diagnóstico";
+    form.appendChild(button);
+
+    container.appendChild(form);
+}
