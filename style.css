@@ -1,97 +1,187 @@
+/* Estilos Gerais */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+header {
+  background-color: #50bbf8;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  margin-bottom: 20px; /* Adicionado */
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #50bbf8;
+}
+
+header i {
+  margin-right: 10px;
 }
 
 .container {
-    width: 80%;
-    margin: 20px auto;
-    background: white;
-    padding: 20px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
+  width: 90%;
+  max-width: 1200px;
+  margin: 20px auto;
+  background: white;
+  padding: 30px; /* Aumentado */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
 
-h1, h2 {
-    text-align: center;
+/* Espaçamento entre seções */
+section {
+  margin-bottom: 30px; /* Adicionado */
 }
 
+h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+p {
+  color: #555;
+  margin-bottom: 20px; /* Adicionado */
+}
+
+/* Tabela */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
-th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 15px; /* Aumentado */
+  text-align: center;
+}
+
+th {
+  background-color: #50bbf8;
+  color: white;
 }
 
 select {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
+  width: 100%;
+  padding: 10px; /* Aumentado */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
 }
 
+/* Botões */
 button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    background-color: #50bbf8;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px; /* Aumentado */
+  margin-top: 20px; /* Aumentado */
+  background-color: #50bbf8;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #4c80c4;
+  background-color: #4c80c4;
 }
 
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
+button i {
+  margin-right: 10px;
 }
 
-label, select {
-    margin: 5px 0;
-}
-
-a{
-    text-decoration: none;
+/* Formulário de Atendimento */
+#form-sintomas {
+  margin-top: 20px;
 }
 
 .card-sintoma {
-    width: 100%;
-    background: #ffffff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    margin: 10px 0;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 10px 0;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
 }
 
 .card-sintoma label {
-    margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: #333;
 }
 
 .card-sintoma input[type="radio"] {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 
-.card-sintoma label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
+/* Estilo para o container do input de arquivo */
+.file-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px; /* Aumentado */
+  margin-bottom: 20px; /* Adicionado */
+}
+
+/* Estilo para o botão personalizado */
+.custom-file-input {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background-color: #50bbf8;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.custom-file-input:hover {
+  background-color: #4c80c4;
+}
+
+.custom-file-input i {
+  margin-right: 10px;
+}
+
+/* Esconde o input de arquivo padrão */
+input[type="file"] {
+  display: none;
+}
+
+/* Estilo para o texto que exibe o nome do arquivo */
+#file-name {
+  color: #555;
+  font-size: 14px;
+  margin-left: 10px; /* Adicionado */
+}
+
+/* Rodapé */
+footer {
+  background-color: #50bbf8;
+  color: white;
+  text-align: center;
+  padding: 15px 0; /* Aumentado */
+  margin-top: 30px; /* Aumentado */
+}
+
+footer p {
+  margin: 0;
+  font-size: 0.9rem;
 }
