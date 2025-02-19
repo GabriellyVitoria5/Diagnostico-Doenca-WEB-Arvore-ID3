@@ -25,6 +25,7 @@ header i {
   margin-right: 10px;
 }
 
+/* Conteiner geral */
 .container {
   width: 90%;
   max-width: 1200px;
@@ -112,20 +113,6 @@ p {
   margin-left: 10px;
 }
 
-/* Rodapé */
-footer {
-  background-color: #50bbf8;
-  color: white;
-  text-align: center;
-  padding: 15px 0;
-  margin-top: 30px;
-}
-
-footer p {
-  margin: 0;
-  font-size: 0.9rem;
-}
-
 /* Botões */
 button {
   display: inline-flex;
@@ -149,6 +136,20 @@ button:hover {
 
 button i {
   margin-right: 10px;
+}
+
+/* Rodapé */
+footer {
+  background-color: #50bbf8;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: 30px;
+}
+
+footer p {
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 /* Estilos do Modal */

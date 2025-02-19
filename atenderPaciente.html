@@ -1,24 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atender Paciente</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Atender Paciente</h1>
-        <p>Paciente deve reponder as seguintes perguntas para diagnosticar a doença.</p>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atendimento de Paciente</title>
+    <link rel="stylesheet" href="atendimento.style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Cabeçalho -->
+    <header>
+      <div class="container">
+        <h1><i class="fas fa-user-md"></i> Atendimento de Paciente</h1>
+      </div>
+    </header>
 
-        <!-- Formulário com os sintomas para o paciente responder -->
-        <form id="form-sintomas"></form>
+    <!-- Conteúdo Principal -->
+    <main class="container">
+      <section>
+        <h2>Diagnóstico do Paciente</h2>
+        <p>Responda às perguntas abaixo para diagnosticar a doença.</p>
 
+        <!-- Contêiner das perguntas -->
+        <div id="perguntas-container">
+          <!-- As perguntas serão inseridas aqui via JavaScript -->
+        </div>
+
+        <!-- Botões de navegação -->
+        <div class="navegacao">
+          <button id="btn-voltar" disabled>
+            <i class="fas fa-arrow-left"></i> Voltar
+          </button>
+          <button id="btn-avancar" disabled>
+            Avançar <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- Botão Voltar para a página inicial -->
+      <section>
         <a href="index.html">
-            <button>Voltar</button>
+          <button><i class="fas fa-home"></i> Voltar ao Início</button>
         </a>
+      </section>
+    </main>
+
+    <!-- Modal para exibir o diagnóstico -->
+    <div id="modal-diagnostico" class="modal">
+      <div class="modal-conteudo">
+        <h3>Diagnóstico</h3>
+        <p id="diagnostico-texto">
+          Aqui será exibido o diagnóstico do paciente.
+        </p>
+        <button id="btn-fechar-modal">Fechar</button>
+      </div>
     </div>
-    
+
+    <!-- Rodapé -->
+    <footer>
+      <div class="container">
+        <p>
+          &copy; 2025 Sistema de Diagnóstico Médico - Gabrielle Fonseca e
+          Gabrielly Vitória.
+        </p>
+      </div>
+    </footer>
+
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
