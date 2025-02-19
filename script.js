@@ -1,6 +1,6 @@
 // Executa quando a página é carregada
 document.addEventListener("DOMContentLoaded", function () {
-  // Verifica se estamos na página inicial
+  // Verifica se estamos na página inicial (index.html)
   if (
     window.location.pathname.endsWith("index.html") ||
     window.location.pathname === "/"
@@ -11,15 +11,25 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       lerArquivoExcel("TabelaTreinamento.xlsx"); // Carrega dados de um arquivo Excel
     }
+
+    // Adiciona o evento para exibir o nome do arquivo selecionado (somente na página inicial)
+    const fileInput = document.getElementById("fileInput");
+    if (fileInput) {
+      fileInput.addEventListener("change", function () {
+        const fileName = this.files[0]
+          ? this.files[0].name
+          : "Nenhum arquivo selecionado";
+        document.getElementById("file-name").textContent = fileName;
+      });
+    }
   }
 
-  // Verifica se estamos na página de atendimento
+  // Verifica se estamos na página de atendimento (atenderPaciente.html)
   if (
     window.location.pathname.endsWith("atenderPaciente.html") ||
-    window.location.pathname === "/"
+    window.location.pathname === "/atenderPaciente"
   ) {
     getDadosTreinamento(); // Busca dados de treinamento
-    criarFormularioSintomas(); // Cria o formulário de sintomas para o paciente
   }
 });
 
@@ -305,25 +315,93 @@ function criarFormularioSintomas() {
   form.appendChild(button);
 }
 
-// Função para enviar as respostas do paciente para o servidor
-function enviarRespostasParaServidor() {
-  const form = document.getElementById("form-sintomas");
+// Executa quando a página é carregada
+document.addEventListener("DOMContentLoaded", function () {
+  // Verifica se estamos na página de atendimento (atenderPaciente.html)
+  if (
+    window.location.pathname.endsWith("atenderPaciente.html") ||
+    window.location.pathname === "/atenderPaciente"
+  ) {
+    const dadosTreinamento = getDadosTreinamento(); // Busca dados de treinamento
+    if (dadosTreinamento.length > 0) {
+      iniciarAtendimento(dadosTreinamento); // Inicia o atendimento
+    } else {
+      console.warn("Nenhum dado de treinamento encontrado.");
+    }
+  }
+});
+
+// Função para iniciar o atendimento
+function iniciarAtendimento(dadosTreinamento) {
+  const perguntasContainer = document.getElementById("perguntas-container");
+  const btnVoltar = document.getElementById("btn-voltar");
+  const btnAvancar = document.getElementById("btn-avancar");
+
+  let perguntaAtual = 0;
   const respostas = [];
 
-  // Coleta as respostas do formulário
-  const inputs = form.querySelectorAll('input[type="radio"]:checked');
-  inputs.forEach((input) => {
-    const sintoma = input.name;
-    const intensidade = input.value;
-    respostas.push({ sintoma, intensidade });
-  });
+  // Exibe a pergunta atual
+  function exibirPergunta() {
+    perguntasContainer.innerHTML = ""; // Limpa o contêiner
 
-  if (respostas.length === 0) {
-    alert("Por favor, responda a todos os sintomas antes de enviar.");
-    return;
+    const sintoma = dadosTreinamento[perguntaAtual]["Sintoma"];
+    const div = document.createElement("div");
+    div.classList.add("card-sintoma");
+
+    const label = document.createElement("label");
+    label.textContent = sintoma;
+    div.appendChild(label);
+
+    // Adiciona radio buttons para intensidade
+    ["Irrelevante", "Médio", "Forte"].forEach((intensidade) => {
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = sintoma;
+      input.value = intensidade;
+
+      input.addEventListener("change", () => {
+        respostas[perguntaAtual] = { sintoma, intensidade };
+        btnAvancar.disabled = false; // Habilita o botão "Avançar"
+      });
+
+      const labelRadio = document.createElement("label");
+      labelRadio.textContent = intensidade;
+      labelRadio.appendChild(input);
+
+      div.appendChild(labelRadio);
+    });
+
+    perguntasContainer.appendChild(div);
+
+    // Atualiza o estado dos botões de navegação
+    btnVoltar.disabled = perguntaAtual === 0;
+    btnAvancar.disabled = !respostas[perguntaAtual];
   }
 
-  // Envia as respostas para o servidor
+  // Navega para a próxima pergunta
+  btnAvancar.addEventListener("click", () => {
+    if (perguntaAtual < dadosTreinamento.length - 1) {
+      perguntaAtual++;
+      exibirPergunta();
+    } else {
+      enviarRespostasParaServidor(respostas); // Envia as respostas ao servidor
+    }
+  });
+
+  // Navega para a pergunta anterior
+  btnVoltar.addEventListener("click", () => {
+    if (perguntaAtual > 0) {
+      perguntaAtual--;
+      exibirPergunta();
+    }
+  });
+
+  // Exibe a primeira pergunta
+  exibirPergunta();
+}
+
+// Função para enviar as respostas para o servidor
+function enviarRespostasParaServidor(respostas) {
   fetch("http://127.0.0.1:5000/diagnostico", {
     method: "POST",
     headers: {
@@ -333,6 +411,8 @@ function enviarRespostasParaServidor() {
   })
     .then((response) => response.json())
     .then((data) => {
+      // Chama a função para exibir o diagnóstico no modal
+      exibirDiagnostico(data.diagnostico);
       console.log("Dados recebidos pelo servidor:", data);
     })
     .catch((error) => {
@@ -348,3 +428,23 @@ if (formSintomas) {
     enviarRespostasParaServidor(); // Envia as respostas
   });
 }
+
+// Função para exibir o diagnóstico no modal
+function exibirDiagnostico(diagnostico) {
+  const modal = document.getElementById("modal-diagnostico");
+  const textoDiagnostico = document.getElementById("diagnostico-texto");
+
+  // Atualiza o texto do diagnóstico
+  textoDiagnostico.textContent = diagnostico;
+
+  // Exibe o modal
+  modal.style.display = "block";
+}
+
+// Função para fechar o modal
+document
+  .getElementById("btn-fechar-modal")
+  .addEventListener("click", function () {
+    const modal = document.getElementById("modal-diagnostico");
+    modal.style.display = "none"; // Fecha o modal
+  });
