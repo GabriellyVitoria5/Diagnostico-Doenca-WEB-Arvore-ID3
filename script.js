@@ -1,89 +1,78 @@
-// Executa quando a página é carregada
 document.addEventListener("DOMContentLoaded", function () {
   // Verifica se estamos na página inicial (index.html)
-  if (
-    window.location.pathname.endsWith("index.html") ||
-    window.location.pathname === "/"
-  ) {
-    const dadosTreinamento = getDadosTreinamento(); // Busca dados salvos no localStorage
+  if (window.location.pathname.endsWith("index.html") || window.location.pathname === "/") {
+    
+    const dadosTreinamento = getDadosTreinamento(); 
     if (dadosTreinamento.length > 0) {
-      preencherTabelaComDadosSalvos(dadosTreinamento); // Preenche a tabela com dados salvos
-    } else {
-      lerArquivoExcel("TabelaTreinamento.xlsx"); // Carrega dados de um arquivo Excel
+      preencherTabelaComDadosSalvos(dadosTreinamento); 
+    } 
+    else {
+      lerArquivoExcel("TabelaTreinamento.xlsx"); 
     }
 
     // Adiciona o evento para exibir o nome do arquivo selecionado (somente na página inicial)
     const fileInput = document.getElementById("fileInput");
     if (fileInput) {
       fileInput.addEventListener("change", function () {
-        const fileName = this.files[0]
-          ? this.files[0].name
-          : "Nenhum arquivo selecionado";
+        const fileName = this.files[0]? this.files[0].name: "Nenhum arquivo selecionado";
         document.getElementById("file-name").textContent = fileName;
       });
     }
   }
 
-  // Verifica se estamos na página de atendimento (atenderPaciente.html)
-  if (
-    window.location.pathname.endsWith("atenderPaciente.html") ||
-    window.location.pathname === "/atenderPaciente"
-  ) {
-    getDadosTreinamento(); // Busca dados de treinamento
+  if (window.location.pathname.endsWith("atenderPaciente.html") || window.location.pathname === "/atenderPaciente") {
+    const dadosTreinamento = getDadosTreinamento(); 
+    if (dadosTreinamento.length > 0) {
+      iniciarAtendimento(dadosTreinamento); 
+    } else {
+      console.warn("Nenhum dado de treinamento encontrado.");
+    }
   }
+
 });
 
-// Função para ler um arquivo Excel
+// Ler arquivo Exel com a base de dadaos de sintomas e doenças do treinamento padrão
 function lerArquivoExcel(nomeArquivo) {
   fetch(nomeArquivo)
-    .then((response) => response.arrayBuffer()) // Converte o arquivo para um array de bytes
+    .then((response) => response.arrayBuffer()) 
     .then((data) => {
-      const workbook = XLSX.read(data, { type: "array" }); // Lê o arquivo Excel
-      const nomePlanilha = workbook.SheetNames[0]; // Pega o nome da primeira planilha
-      const planilha = workbook.Sheets[nomePlanilha]; // Acessa a planilha
-      const dadosJson = XLSX.utils.sheet_to_json(planilha, { header: 1 }); // Converte para JSON
+      const workbook = XLSX.read(data, { type: "array" }); 
+      const nomePlanilha = workbook.SheetNames[0]; 
+      const planilha = workbook.Sheets[nomePlanilha]; 
+      const dadosJson = XLSX.utils.sheet_to_json(planilha, { header: 1 }); 
 
-      preencherTabela(dadosJson); // Preenche a tabela com os dados
+      preencherTabela(dadosJson);
     })
     .catch((erro) => console.error("Erro ao carregar o arquivo Excel:", erro));
 }
 
-// Função para preencher a tabela com os dados do Excel
+// Preencher a tabela de treinamento com os dados do arquivo Excel
 function preencherTabela(dados) {
   if (dados.length === 0) {
     console.error("Arquivo Excel vazio ou formato inválido.");
     return;
   }
 
-  const thead = document.querySelector("#tabela-sintomas thead tr"); // Cabeçalho da tabela
-  const tbody = document.querySelector("#tabela-sintomas tbody"); // Corpo da tabela
+  const thead = document.querySelector("#tabela-sintomas thead tr"); 
+  const tbody = document.querySelector("#tabela-sintomas tbody"); 
 
   // Limpa a tabela antes de adicionar novos dados
   thead.innerHTML = "";
   tbody.innerHTML = "";
-
-  // Preenche o cabeçalho com as doenças (primeira linha do Excel)
-  thead.innerHTML =
-    `<th>Sintoma</th>` +
-    dados[0]
-      .slice(1)
-      .map((doenca) => `<th contenteditable="true">${doenca}</th>`)
-      .join("");
+  thead.innerHTML =`<th>Sintoma</th>` + dados[0].slice(1).map((doenca) => `<th contenteditable="true">${doenca}</th>`).join("");
 
   // Adiciona os sintomas e as intensidades (combobox)
   dados.slice(1).forEach((linha, index) => {
-    const row = document.createElement("tr"); // Cria uma nova linha
+    const row = document.createElement("tr"); 
     const cellSintoma = document.createElement("td"); // Cria célula para o sintoma
     cellSintoma.textContent = linha[0]; // Adiciona o nome do sintoma
     cellSintoma.contentEditable = "true"; // Permite editar o nome do sintoma
     row.appendChild(cellSintoma);
 
-    // Adiciona as intensidades (combobox) para cada doença
     linha.slice(1).forEach((intensidade, colIndex) => {
       const cell = document.createElement("td");
       const select = document.createElement("select");
 
-      // Adiciona as opções de intensidade
       ["Irrelevante", "Médio", "Forte"].forEach((optionText) => {
         const option = document.createElement("option");
         option.value = optionText;
@@ -91,7 +80,6 @@ function preencherTabela(dados) {
         select.appendChild(option);
       });
 
-      // Define o valor do combobox com base no valor do Excel
       if (intensidade) {
         const intensidadeSintoma = getIntensidadePorValor(intensidade);
         select.value = intensidadeSintoma;
@@ -105,7 +93,7 @@ function preencherTabela(dados) {
   });
 }
 
-// Função para preencher a tabela com dados salvos no localStorage
+// Preencher a tabela com dados salvos no localStorage
 function preencherTabelaComDadosSalvos(dados) {
   if (!dados || dados.length === 0) {
     console.warn("Nenhum dado salvo encontrado para preencher a tabela.");
@@ -132,11 +120,10 @@ function preencherTabelaComDadosSalvos(dados) {
   dados.forEach((linha) => {
     const row = document.createElement("tr");
     const cellSintoma = document.createElement("td");
-    cellSintoma.textContent = linha["Sintoma"]; // Adiciona o nome do sintoma
+    cellSintoma.textContent = linha["Sintoma"]; 
     cellSintoma.contentEditable = "true";
     row.appendChild(cellSintoma);
 
-    // Adiciona as intensidades (combobox) para cada doença
     headers.slice(1).forEach((doenca) => {
       const cell = document.createElement("td");
       const select = document.createElement("select");
@@ -155,7 +142,7 @@ function preencherTabelaComDadosSalvos(dados) {
       row.appendChild(cell);
     });
 
-    tbody.appendChild(row); // Adiciona a linha à tabela
+    tbody.appendChild(row);
   });
 
   console.log("Tabela preenchida com os dados salvos.");
@@ -171,19 +158,17 @@ function getIntensidadePorValor(valor) {
     case "Forte":
       return "Forte";
     default:
-      return "Irrelevante"; // Valor padrão
+      return "Irrelevante"; 
   }
 }
 
-// Função para salvar os dados da tabela no localStorage
+// Salvar os dados da tabela no localStorage
 function salvarDadosTreinamento() {
   const tabela = document.getElementById("tabela-sintomas");
   const dados = [];
-  const headers = Array.from(tabela.querySelector("thead tr").children)
-    .slice(1)
-    .map((th) => th.textContent.trim()); // Doenças
+  const headers = Array.from(tabela.querySelector("thead tr").children).slice(1).map((th) => th.textContent.trim()); // Doenças
 
-  // Coleta os dados da tabela
+  // Pegar os dados da tabela
   tabela.querySelectorAll("tbody tr").forEach((tr) => {
     const linha = {};
     const celulas = tr.children;
@@ -194,42 +179,42 @@ function salvarDadosTreinamento() {
       linha[doenca] = select.value; // Intensidade
     });
 
-    dados.push(linha); // Adiciona a linha aos dados
+    dados.push(linha); 
   });
 
-  localStorage.setItem("dadosTreinamento", JSON.stringify(dados)); // Salva no localStorage
+  localStorage.setItem("dadosTreinamento", JSON.stringify(dados)); 
   console.log("Dados de treinamento salvos:", dados);
 
-  gerarDadosTreinamentoJson(JSON.stringify(dados)); // Gera um arquivo JSON com os dados
+  gerarDadosTreinamentoJson(JSON.stringify(dados)); 
 }
 
-// Função para gerar e baixar um arquivo JSON com os dados
+// Gerar e baixar um arquivo JSON com os dados do treinamento
 function gerarDadosTreinamentoJson(dadosTreinamentoSalvos) {
   const blob = new Blob([dadosTreinamentoSalvos], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "dadosTreinamento.json"; // Nome do arquivo
+  a.download = "dadosTreinamento.json"; 
   document.body.appendChild(a);
-  a.click(); // Inicia o download
+  a.click(); 
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
-// Função para buscar dados de treinamento do localStorage
+// Buscar dados de treinamento do localStorage
 function getDadosTreinamento() {
   const dadosSalvos = localStorage.getItem("dadosTreinamento");
   if (dadosSalvos) {
     const dadosTreinamento = JSON.parse(dadosSalvos);
     console.log("Dados de treinamento carregados:", dadosTreinamento);
-    return dadosTreinamento; // Retorna os dados
+    return dadosTreinamento; 
   }
 
   console.log("Nenhum dado de treinamento encontrado.");
   return {};
 }
 
-// Função para enviar dados de treinamento para o servidor Flask
+// Enviar dados de treinamento para o servidor Flask para iniciar o atendimento do paciente
 function enviarDadosParaServidor() {
   const fileInput = document.getElementById("fileInput");
   const file = fileInput.files[0];
@@ -243,7 +228,6 @@ function enviarDadosParaServidor() {
   reader.onload = function (e) {
     const jsonData = JSON.parse(e.target.result);
 
-    // Envia os dados para o servidor
     fetch("http://127.0.0.1:5000/upload", {
       method: "POST",
       headers: {
@@ -261,27 +245,21 @@ function enviarDadosParaServidor() {
       });
   };
 
-  reader.readAsText(file); // Lê o arquivo como texto
+  reader.readAsText(file); 
 }
 
-// Função para criar o formulário de sintomas para o paciente
+// Formulário de sintomas para o paciente poder responder
 function criarFormularioSintomas() {
   const dadosTreinamento = getDadosTreinamento();
   const form = document.getElementById("form-sintomas");
 
-  // Verifica se o formulário existe e se há dados de treinamento
-  if (
-    !form ||
-    !dadosTreinamento ||
-    Object.keys(dadosTreinamento).length === 0
-  ) {
-    console.warn(
-      "Nenhum dado de treinamento encontrado ou formulário não existe."
-    );
+  // Validar se o formulário existe e se há dados de treinamento
+  if (!form ||!dadosTreinamento ||Object.keys(dadosTreinamento).length === 0) {
+    console.warn("Nenhum dado de treinamento encontrado ou formulário não existe.");
     return;
   }
 
-  // Adiciona os sintomas e as opções de intensidade
+  // Adicionar os sintomas e as opções de intensidade
   dadosTreinamento.forEach((sintomaObj) => {
     const sintoma = sintomaObj["Sintoma"];
     const div = document.createElement("div");
@@ -291,7 +269,7 @@ function criarFormularioSintomas() {
     label.textContent = sintoma;
     div.appendChild(label);
 
-    // Adiciona radio buttons para intensidade
+    // Adicionar radio buttons para intensidade
     ["Irrelevante", "Médio", "Forte"].forEach((intensidade) => {
       const input = document.createElement("input");
       input.type = "radio";
@@ -305,33 +283,17 @@ function criarFormularioSintomas() {
       div.appendChild(labelRadio);
     });
 
-    form.appendChild(div); // Adiciona o sintoma ao formulário
+    form.appendChild(div); 
   });
 
-  // Adiciona o botão de enviar
+  // Botão para enviar as respostar e finalizar o diagnóstico
   const button = document.createElement("button");
   button.type = "submit";
   button.textContent = "Finalizar diagnóstico";
   form.appendChild(button);
 }
 
-// Executa quando a página é carregada
-document.addEventListener("DOMContentLoaded", function () {
-  // Verifica se estamos na página de atendimento (atenderPaciente.html)
-  if (
-    window.location.pathname.endsWith("atenderPaciente.html") ||
-    window.location.pathname === "/atenderPaciente"
-  ) {
-    const dadosTreinamento = getDadosTreinamento(); // Busca dados de treinamento
-    if (dadosTreinamento.length > 0) {
-      iniciarAtendimento(dadosTreinamento); // Inicia o atendimento
-    } else {
-      console.warn("Nenhum dado de treinamento encontrado.");
-    }
-  }
-});
-
-// Função para iniciar o atendimento
+// Iniciar o atendimento
 function iniciarAtendimento(dadosTreinamento) {
   const perguntasContainer = document.getElementById("perguntas-container");
   const btnVoltar = document.getElementById("btn-voltar");
@@ -340,9 +302,9 @@ function iniciarAtendimento(dadosTreinamento) {
   let perguntaAtual = 0;
   const respostas = [];
 
-  // Exibe a pergunta atual
+  // Exibir a pergunta atual
   function exibirPergunta() {
-    perguntasContainer.innerHTML = ""; // Limpa o contêiner
+    perguntasContainer.innerHTML = "";
 
     const sintoma = dadosTreinamento[perguntaAtual]["Sintoma"];
     const div = document.createElement("div");
@@ -352,7 +314,7 @@ function iniciarAtendimento(dadosTreinamento) {
     label.textContent = sintoma;
     div.appendChild(label);
 
-    // Adiciona radio buttons para intensidade
+    // Adicionar radio buttons para intensidade
     ["Irrelevante", "Médio", "Forte"].forEach((intensidade) => {
       const input = document.createElement("input");
       input.type = "radio";
@@ -373,12 +335,12 @@ function iniciarAtendimento(dadosTreinamento) {
 
     perguntasContainer.appendChild(div);
 
-    // Atualiza o estado dos botões de navegação
+    // Atualizar o estado dos botões de navegação
     btnVoltar.disabled = perguntaAtual === 0;
     btnAvancar.disabled = !respostas[perguntaAtual];
   }
 
-  // Navega para a próxima pergunta
+  // Navegar para a próxima pergunta
   btnAvancar.addEventListener("click", () => {
     if (perguntaAtual < dadosTreinamento.length - 1) {
       perguntaAtual++;
@@ -388,7 +350,7 @@ function iniciarAtendimento(dadosTreinamento) {
     }
   });
 
-  // Navega para a pergunta anterior
+  // Navegar para a pergunta anterior
   btnVoltar.addEventListener("click", () => {
     if (perguntaAtual > 0) {
       perguntaAtual--;
@@ -396,11 +358,10 @@ function iniciarAtendimento(dadosTreinamento) {
     }
   });
 
-  // Exibe a primeira pergunta
   exibirPergunta();
 }
 
-// Função para enviar as respostas para o servidor
+// Enviar as respostas do paciente para o servidor
 function enviarRespostasParaServidor(respostas) {
   fetch("http://127.0.0.1:5000/diagnostico", {
     method: "POST",
@@ -411,7 +372,6 @@ function enviarRespostasParaServidor(respostas) {
   })
     .then((response) => response.json())
     .then((data) => {
-      // Chama a função para exibir o diagnóstico no modal
       exibirDiagnostico(data.diagnostico);
       console.log("Dados recebidos pelo servidor:", data);
     })
@@ -420,31 +380,27 @@ function enviarRespostasParaServidor(respostas) {
     });
 }
 
-// Adiciona o evento de envio ao formulário (somente se o formulário existir)
+// Adicionar o evento de envio ao formulário (somente se o formulário existir)
 const formSintomas = document.getElementById("form-sintomas");
 if (formSintomas) {
   formSintomas.addEventListener("submit", function (event) {
-    event.preventDefault(); // Evita o envio padrão do formulário
-    enviarRespostasParaServidor(); // Envia as respostas
+    event.preventDefault(); 
+    enviarRespostasParaServidor(); 
   });
 }
 
-// Função para exibir o diagnóstico no modal
+// Exibir o diagnóstico da doença no modal
 function exibirDiagnostico(diagnostico) {
   const modal = document.getElementById("modal-diagnostico");
   const textoDiagnostico = document.getElementById("diagnostico-texto");
 
-  // Atualiza o texto do diagnóstico
   textoDiagnostico.textContent = diagnostico;
 
-  // Exibe o modal
   modal.style.display = "block";
 }
 
-// Função para fechar o modal
-document
-  .getElementById("btn-fechar-modal")
-  .addEventListener("click", function () {
+// Fechar o modal com resultado do diagnóstico
+document.getElementById("btn-fechar-modal").addEventListener("click", function () {
     const modal = document.getElementById("modal-diagnostico");
-    modal.style.display = "none"; // Fecha o modal
+    modal.style.display = "none"; 
   });

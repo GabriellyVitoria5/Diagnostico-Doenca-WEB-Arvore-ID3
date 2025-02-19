@@ -6,8 +6,7 @@ from sklearn.tree import DecisionTreeClassifier  # Algoritmo de árvore de decis
 app = Flask(__name__)
 CORS(app)
 
-# Variáveis globais
-model = None  # Armazena o modelo de árvore de decisão
+model = None  # Modelo de árvore de decisão
 X_global = None  # Armazena as colunas (sintomas) usadas no treinamento
 sintomas_treinados = []  # Lista para armazenar os sintomas que foram treinados
 
@@ -15,21 +14,21 @@ sintomas_treinados = []  # Lista para armazenar os sintomas que foram treinados
 # Rota para receber e processar os dados de treinamento
 @app.route("/upload", methods=["POST"])
 def upload_file():
-    global model, X_global, sintomas_treinados  # Acessa as variáveis globais
+    global model, X_global, sintomas_treinados  
 
-    data = request.get_json()  # Recebe os dados enviados no corpo da requisição
+    # Recebe os dados enviados no corpo da requisição
+    data = request.get_json() 
 
-    # Verifica se os dados foram recebidos
     if not data:
         return jsonify({"error": "Nenhum dado enviado"}), 400
 
     print("JSON recebido:", data)  # Exibe os dados recebidos para depuração
 
-    # Converte os dados para o formato correto
+    # Converte os dados para o formato correto e mais fácil de trabalhar
     data_corrigido = []
     for item in data:
         if "Sintoma" in item:
-            sintoma = item["Sintoma"]  # Extrai o nome do sintoma
+            sintoma = item["Sintoma"]  
             for doenca, intensidade in item.items():
                 if doenca != "Sintoma":  # Ignora a chave "Sintoma"
                     data_corrigido.append(
@@ -38,9 +37,8 @@ def upload_file():
                             "doenca": doenca,
                             "intensidade": intensidade,
                         }
-                    )  # Organiza os dados em um formato mais fácil de trabalhar
+                    )   
 
-    # Verifica se os dados foram convertidos corretamente
     if not data_corrigido:
         return (
             jsonify({"error": "Formato inválido. Nenhuma entrada válida encontrada."}),
@@ -51,7 +49,7 @@ def upload_file():
     intensidade_map = {"Irrelevante": 0, "Médio": 1, "Forte": 2}
 
     sintomas_treinados = []  # Reinicia a lista de sintomas treinados
-    intensidades_dict = {}  # Dicionário para armazenar as intensidades dos sintomas
+    intensidades_dict = {}  # Dicionário com intensidades dos sintomas
 
     # Processa os dados e mapeia as intensidades
     for item in data_corrigido:
@@ -75,14 +73,14 @@ def upload_file():
         zip(*intensidades)
     )  # Transpõe a lista para alinhar as intensidades
 
-    # Cria um DataFrame (tabela) com as intensidades e os sintomas como colunas
+    # Criar um DataFrame (tabela) com as intensidades e os sintomas como colunas
     df = pd.DataFrame(intensidades, columns=sintomas_treinados)
     X_global = df  # Armazena o DataFrame globalmente
 
-    # Cria o vetor de rótulos (doenças) com base nas doenças associadas aos sintomas
+    # Criar o vetor de rótulos (doenças) com base nas doenças associadas aos sintomas
     y = [item["doenca"] for item in data_corrigido[: len(X_global)]]
 
-    # Treina o modelo de árvore de decisão com os dados
+    # Treinar o modelo de árvore de decisão com os dados
     model = DecisionTreeClassifier(criterion="entropy")
     model.fit(X_global, y)
 
@@ -92,11 +90,11 @@ def upload_file():
 # Rota para receber os sintomas e retornar um diagnóstico
 @app.route("/diagnostico", methods=["POST"])
 def receber_diagnostico():
-    global sintomas_treinados, X_global, model  # Acessa as variáveis globais
+    global sintomas_treinados, X_global, model  
 
     respostas = request.get_json().get(
         "respostas", []
-    )  # Recebe as respostas do usuário
+    ) 
     if not respostas:
         return jsonify({"error": "Nenhuma resposta recebida"}), 400
 
@@ -125,15 +123,14 @@ def receber_diagnostico():
     if len(respostas_numericas) != len(X_global.columns):
         return jsonify({"error": "Número incorreto de respostas."}), 400
 
-    # Cria um DataFrame com os nomes das colunas corretos
+    # Criar um DataFrame com os nomes das colunas corretos
     respostas_df = pd.DataFrame([respostas_numericas], columns=sintomas_treinados)
 
-    # Faz a previsão usando o modelo treinado
+    # Fazer a previsão usando o modelo treinado
     prediction = model.predict(respostas_df)
 
-    return jsonify({"diagnostico": prediction[0]}), 200  # Retorna o diagnóstico
+    return jsonify({"diagnostico": prediction[0]}), 200 
 
 
-# Inicia o servidor Flask
 if __name__ == "__main__":
-    app.run(debug=True)  # Executa a aplicação em modo de depuração
+    app.run(debug=True)  

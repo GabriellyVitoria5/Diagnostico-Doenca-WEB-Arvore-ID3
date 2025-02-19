@@ -11,7 +11,7 @@
     />
   </head>
   <body>
-    <!-- Cabeçalho -->
+    
     <header>
       <div class="container">
         <h1>
@@ -20,7 +20,6 @@
       </div>
     </header>
 
-    <!-- Conteúdo Principal -->
     <main class="container">
       <section>
         <h2>Bem-vindo, Médico!</h2>
@@ -53,13 +52,11 @@
         </button>
       </section>
 
-      <!-- Upload de Arquivo -->
+      <!-- Upload do arquivo de treinamento -->
       <section>
         <h2><i class="fas fa-upload"></i> Iniciar Atendimento</h2>
-        <p>
-          Selecione o arquivo de treinamento gerado para dar início ao
-          atendimento do paciente:
-        </p>
+        <p>Selecione o arquivo de treinamento gerado para dar início ao atendimento do paciente:</p>
+        
         <div class="file-input-container">
           <label for="fileInput" class="custom-file-input">
             <i class="fas fa-file-upload"></i> Escolher Arquivo
@@ -67,18 +64,18 @@
           <input type="file" id="fileInput" accept=".json" />
           <span id="file-name">Nenhum arquivo selecionado</span>
         </div>
+
         <button id="atender-paciente" onclick="enviarDadosParaServidor()">
           <i class="fas fa-user-md"></i> Atender Paciente
         </button>
+
       </section>
     </main>
 
-    <!-- Rodapé -->
     <footer>
       <div class="container">
         <p>
-          &copy; 2025 Sistema de Diagnóstico Médico - Gabrielle Fonseca e
-          Gabrielly Vitória.
+          &copy; 2025 Sistema de Diagnóstico Médico - Gabrielle Fonseca e Gabrielly Vitória.
         </p>
       </div>
     </footer>
